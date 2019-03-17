@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "description": "Lambda Test Bot for Slack",
   "main": "index.js",
-  "dependencies": {},
+  "dependencies": {
+    "aws-sdk": "latest"
+  },
   "devDependencies": {
     "eslint": "^5.13.0",
     "eslint-config-airbnb-base": "^13.1.0",

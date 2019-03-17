@@ -1,4 +1,6 @@
 const https = require('https');
+const AWS = require('aws-sdk');
+const docClient = new AWS.DynamoDB.DocumentClient({region: 'us-east-1'});
 
 // eslint-disable-next-line prefer-destructuring
 const VERIFICATION_TOKEN = process.env.VERIFICATION_TOKEN;
@@ -32,6 +34,27 @@ function reply(event, callback) {
 
   // check for non-bot message and keywords  
   if (!event.subtype && event.type === 'message' && (regex.test(event.text) || regex.test(attachmentTitle))) {
+    
+    // DynamoDB Put
+    let params =  {
+      Item: {
+          MessageID: event.client_msg_id,
+          UserID: event.user,
+          MessageText: event.text,
+          TimeStamp: event.ts
+      },
+  
+      TableName: 'SackoHistory'
+    };
+    console.log(JSON.stringify(params));
+    docClient.put(params, function(err,data){
+      if(err) {
+          console.log("Database write error");
+      }else{
+          console.log("Successful database write");
+      }
+    });
+
     const attachment = JSON.stringify([
         {
             "fallback": "The SACKO has been summoned",
