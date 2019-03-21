@@ -1,12 +1,13 @@
 const https = require('https');
 const AWS = require('aws-sdk');
-const docClient = new AWS.DynamoDB.DocumentClient({region: 'us-east-1'});
+
+const docClient = new AWS.DynamoDB.DocumentClient({ region: 'us-east-1' });
 
 // eslint-disable-next-line prefer-destructuring
 const VERIFICATION_TOKEN = process.env.VERIFICATION_TOKEN;
 const BOT_TOKEN = process.env.BOT_TOKEN;
-const wordlist = "(bread|cash|change|chips|coinage|copper|currency|doubloon|dough|gold|jack|mintage|money|piece|scratch|silver|change|specie)";
-const regex = new RegExp("(^|\\s)" + wordlist + "(\\s|$)", 'ig');
+const wordlist = '(bread|cash|change|chips|coinage|copper|currency|doubloon|dough|gold|jack|mintage|money|piece|scratch|silver|change|specie)';
+const regex = new RegExp('(^|\\s)' + wordlist + '(\\s|$)', 'ig');
 
 
 // Verify Url - https://api.slack.com/events/url_verification
@@ -22,57 +23,51 @@ function verify(token, challenge, callback) {
 
 // Post message to Slack - https://api.slack.com/methods/chat.postMessage
 function reply(event, callback) {
-
   // send 200 immediately
   callback(null, { statusCode: 200 });
 
-  var attachmentTitle = "";
-  
-  if (event.attachments) {
-    attachmentTitle = event.attachments[0].title;
-  }
+  let messageText = event.text;
 
-  // check for non-bot message and keywords  
-  if (!event.subtype && event.type === 'message' && (regex.test(event.text) || regex.test(attachmentTitle))) {
-    
+  if (event.attachments) messageText = event.attachments[0].title;
+
+  // check for non-bot message and keywords
+  if (!event.subtype && event.type === 'message' && (regex.test(messageText))) {
     // DynamoDB Put
-    let params =  {
+    const params = {
       Item: {
-          MessageID: event.client_msg_id,
-          UserID: event.user,
-          MessageText: event.text,
-          TimeStamp: event.ts
+        UserID: event.user,
+        TimeStamp: event.ts,
+        MessageText: messageText,
       },
-  
-      TableName: 'SackoHistory'
+      TableName: 'SackoHistory',
     };
     console.log(JSON.stringify(params));
-    docClient.put(params, function(err,data){
-      if(err) {
-          console.log("Database write error");
-      }else{
-          console.log("Successful database write");
+    docClient.put(params, (err, data) => {
+      if (err) {
+        console.log('Database write error:' + err.message);
+      } else {
+        console.log('Successful database write');
       }
     });
 
     const attachment = JSON.stringify([
-        {
-            "fallback": "The SACKO has been summoned",
-            "color": "#2eb886",
-            "title": `<@${event.user}> is the SACKO`,
-            "title_link": "https://66.media.tumblr.com/f5c030cba4abe8541661eb90f9237185/tumblr_inline_nvhjp2bCDU1qbdfh0_500.gif",
-            "image_url": "https://66.media.tumblr.com/f5c030cba4abe8541661eb90f9237185/tumblr_inline_nvhjp2bCDU1qbdfh0_500.gif",
-            "thumb_url": "http://example.com/path/to/thumb.png",
-            "footer": "SackoBot",
-            "footer_icon": "https://i.pinimg.com/originals/5b/99/d0/5b99d08f538428098192eddbd8b03e61.png"
-        }
+      {
+        fallback: 'The SACKO has been summoned',
+        color: '#2eb886',
+        title: `<@${event.user}> is the SACKO`,
+        title_link: 'https://66.media.tumblr.com/f5c030cba4abe8541661eb90f9237185/tumblr_inline_nvhjp2bCDU1qbdfh0_500.gif',
+        image_url: 'https://66.media.tumblr.com/f5c030cba4abe8541661eb90f9237185/tumblr_inline_nvhjp2bCDU1qbdfh0_500.gif',
+        thumb_url: 'http://example.com/path/to/thumb.png',
+        footer: 'SackoBot',
+        footer_icon: 'https://i.pinimg.com/originals/5b/99/d0/5b99d08f538428098192eddbd8b03e61.png',
+      },
     ]);
-    
+
     const message = JSON.stringify({
       statusCode: 200,
       token: BOT_TOKEN,
       channel: event.channel,
-      text: "",
+      text: '',
       attachments: attachment,
     });
 
@@ -99,7 +94,7 @@ function reply(event, callback) {
         process.stdout.write(d);
       });
     });
-    
+
     req.on('error', (error) => {
       console.error(error);
     });
@@ -107,7 +102,6 @@ function reply(event, callback) {
     // send HTTP POST with message as the data
     req.write(message);
     req.end();
-    
   }
 }
 
