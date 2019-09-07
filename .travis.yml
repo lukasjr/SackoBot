@@ -11,12 +11,16 @@ deploy:
     script: node scripts/deploy.js SackoBot
     skip_cleanup: true
     on:
-      branch: master
+      branches:
+        only:
+          - master
   - provider: script
     script: node scripts/deploy.js SackoBot dev
     skip_cleanup: true
     on:
-      branch: dev
+      branches:
+        only:
+          - dev
   secret_access_key:
     secure: dcZbV796HanDUgGpGf8zNBfQXUOvc1GaiJE8bWEyJ/7DLRerKp1a+7pfmDi59tXsmk9A7zDIqF6FLkbpRtXUeTb8czYFFOqDHs6HWyMNH1WNR+1ueqL9AJS/h07rmJ8gI7x/IVjWVnWcgQx7EJvg/tn7INJmfPqU+wCpPRhsBb+aXo7GbkeJQrR1u/6U947mvBF5ESgEkkZAQ1WOotju9o/9PbESlxxH5D5LjKzaTjVuiTa8OWqhM3WrweQCqtKn+nDlop8BYxHxon6tmfRQhJWGX9gqcuO2uy1hzbeMal4IwZVHYGo9oox+/aaxz835Gn02Lrf3ImZaJydjIjJjBHADri5WczselCe1gEN5dXH6g/nbag9jVz90lrmoLdugRMRadCpfIYoCtFmHIIf6bl3yPASqMRn5kLw8887G5npHrV6UZXymNM7Qs97JH+nNR96lxMQdpNhOteLHhQ0AZQZoQLCH9v7cxQA8BA2wVQJaty3S1+9qaI9PK4vNvP0yks88bGj1Klr41JGMbCll8EPQS/Ak3SmW2oa/6KIRq9pjmot5/ckoyBMNoYfoF+rdjfN4bIs6HctoyLoOgdFnHo1So6QMj5rB6db1ORA3oVROveBw8AYyeUPVNY/sRcqSHzx4D+k+mn0qJq6gGd5b9UeG4tZVvuz1aKo52b2t9Sg=
   access_key_id:
