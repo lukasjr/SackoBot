@@ -2,13 +2,18 @@ const https = require('https');
 const AWS = require('aws-sdk');
 
 const docClient = new AWS.DynamoDB.DocumentClient({ region: 'us-east-1' });
+const querystring = require('querystring');
 
 // eslint-disable-next-line prefer-destructuring
 const VERIFICATION_TOKEN = process.env.VERIFICATION_TOKEN;
-const BOT_TOKEN = process.env.BOT_TOKEN;
+const { BOT_TOKEN } = process.env;
 const wordlist = '(bread|cash|change|chips|coinage|copper|currency|doubloon|dough|gold|jack|mintage|money|piece|scratch|silver|change|specie)';
 const regex = new RegExp('(^|\\s)' + wordlist + '(\\s|$)', 'ig');
-
+const slackIcons = {
+  'U312UCZLN': 'https://ca.slack-edge.com/T2ZM12732-U312UCZLN-g279c4f0b923-48',
+  'U318QLFF1': 'https://ca.slack-edge.com/T2ZM12732-U318QLFF1-7a93098a4d4a-24',
+  'U3130P5AA': 'https://ca.slack-edge.com/T2ZM12732-U3130P5AA-af61e8efa7a2-24',
+}
 
 // Verify Url - https://api.slack.com/events/url_verification
 function verify(token, challenge, callback) {
@@ -27,9 +32,9 @@ function reply(event, callback) {
   callback(null, { statusCode: 200 });
 
   let messageText = event.text;
-
+  console.log('BEFORE: ' + messageText);
   if (event.attachments) messageText = event.attachments[0].title;
-
+  console.log('BEFORE: ' + messageText);
   // check for non-bot message and keywords
   if (!event.subtype && event.type === 'message' && (regex.test(messageText))) {
     // DynamoDB Put
@@ -105,17 +110,80 @@ function reply(event, callback) {
   }
 }
 
+function slashCommand(callback) {
+  var numAttachment = 3;
+  var params = {
+    TableName: "SackoHistory",
+  };
+  docClient.scan(params, function(err, data) {
+   if (err) console.log(err, err.stack); // an error occurred
+   else {
+    let items = data.Items;
+    items.sort(function(a, b) {
+      return b.TimeStamp - a.TimeStamp;
+    });
+    console.log(items[0]);
+    
+    var attachmentTest = [];
+    var messageTextTest = ""
+    var dateTest = ""
+    
+    for (var i = 0; i < numAttachment; i++) {
+      attachmentTest[i] = {
+        color: '#0CDEF0',
+        author_name: `<@${items[i].UserID}>`,
+        author_icon: slackIcons[`${items[i].UserID}`],
+        text: `${items[i].MessageText}`,
+        ts: items[i].TimeStamp 
+      }
+    }
+    const attachment = JSON.stringify(attachmentTest);
+    // const attachment = JSON.stringify([
+    //   {
+    //     fallback: 'The SACKO has been summoned',
+    //     color: '#0CDEF0',
+    //     text: messageText
+    //   },
+    // ]);
+      
+    // messageText = data.Item.MessageText;
+    // console.log('Text from DB: ' + messageText);
+    let body =  JSON.stringify({
+      response_type: 'in_channel',
+      text: '*Ice Cream Social Top 3*',
+      attachments: attachment,
+    });
+    console.log(body);
+    callback(null, { 
+      statusCode: 200,
+      body,
+    });
+     // successful response
+   }
+ });
+
+}
+
 // Lambda handler
 exports.handler = (data, context, callback) => {
   let body;
+  let messageType = '';
+  let contentType = data.headers['Content-Type'];
   console.log(data.body);
   if (data.body !== null && data.body !== undefined) {
-    body = JSON.parse(data.body);
+     if (contentType === 'application/json') {
+      body = JSON.parse(data.body);
+      messageType = body.type
+    } else if (contentType === 'application/x-www-form-urlencoded') {
+      body = querystring.parse(data.body);
+      messageType = 'slash_command'
+    }
   }
 
-  switch (body.type) {
+  switch (messageType) {
     case 'url_verification': verify(body.token, body.challenge, callback); break;
     case 'event_callback': reply(body.event, callback); break;
+    case 'slash_command': slashCommand(callback); break;
     default: callback(null, { statusCode: 200 });
   }
 };
