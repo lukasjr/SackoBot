@@ -1,0 +1,23 @@
+language: node_js
+node_js:
+- 8.10.0
+after_install:
+- "(cd lambda/sacko-bot/ && npm install --production)"
+after_success:
+- npm run test
+deploy:
+  matrix:
+  - provider: script
+    script: node scripts/deploy.js SackoBot
+    skip_cleanup: true
+    on:
+      branch: master
+  - provider: script
+    script: node scripts/deploy.js SackoBot dev
+    skip_cleanup: true
+    on:
+      branch: dev
+  secret_access_key:
+    secure: dcZbV796HanDUgGpGf8zNBfQXUOvc1GaiJE8bWEyJ/7DLRerKp1a+7pfmDi59tXsmk9A7zDIqF6FLkbpRtXUeTb8czYFFOqDHs6HWyMNH1WNR+1ueqL9AJS/h07rmJ8gI7x/IVjWVnWcgQx7EJvg/tn7INJmfPqU+wCpPRhsBb+aXo7GbkeJQrR1u/6U947mvBF5ESgEkkZAQ1WOotju9o/9PbESlxxH5D5LjKzaTjVuiTa8OWqhM3WrweQCqtKn+nDlop8BYxHxon6tmfRQhJWGX9gqcuO2uy1hzbeMal4IwZVHYGo9oox+/aaxz835Gn02Lrf3ImZaJydjIjJjBHADri5WczselCe1gEN5dXH6g/nbag9jVz90lrmoLdugRMRadCpfIYoCtFmHIIf6bl3yPASqMRn5kLw8887G5npHrV6UZXymNM7Qs97JH+nNR96lxMQdpNhOteLHhQ0AZQZoQLCH9v7cxQA8BA2wVQJaty3S1+9qaI9PK4vNvP0yks88bGj1Klr41JGMbCll8EPQS/Ak3SmW2oa/6KIRq9pjmot5/ckoyBMNoYfoF+rdjfN4bIs6HctoyLoOgdFnHo1So6QMj5rB6db1ORA3oVROveBw8AYyeUPVNY/sRcqSHzx4D+k+mn0qJq6gGd5b9UeG4tZVvuz1aKo52b2t9Sg=
+  access_key_id:
+    secure: hJ6R/sFjDwQZ0ahs/FIxAdi0coC+L9EmmZNkuwwp3HvGaFYTtbfedLqhgS7ngeq21ABA+eBDWy2KaoCg0btc9mf30q0z/tUcGL8EN1LXzk9//Ga7pt4EVXBwKQ2j4O1rXahbfrJ5bAlMjKHj7kUKEu/ooPvoMN4i71czo62kPz0bQyCpQitqLEHqgXVX7DC4hyoj0+hRW2Svmb1bxRXhXwEhP4typ9oN8AIkiP3QtQnUgrA8DuJA9c0tZ+1+JKuENN1to4pgIaB0mEx2Nkpq9jmXx6EXIxn3Txs3lqXkdHPO3b/0dSWna+eT1r41is276yxbFlSGkHn6Vz2Gdl1EPgxgVXRwLDJbDWRMf73DOLZB2hUshShIHawuVuCAo9EnuRYvKfqpcMrJ6Mjb2wP5uZ/j+0FanSGIZqqdTcqINx30FJqUkbsEGw62yuJ8sj8hDEjSQTVlhWy7dcRSuv+/XXNo+NYQeptyxoURB9aOpwakMVlsEXzauf8wjuLVxN7mgxkNLNRUrCj/Wz2mkEyEh3ngjfZnS7xntdtYGJ764E/0QbanHVNegHOCD0yvyGzhevQ88wOz8NC/Gon+E+ScvOcFHnxj+Ifw4RmY2Ql9k5/8cvXYZ3nT18eN1d5EghZoJJ1u0QhQCAVCmBHNRTRLOupHQIiacxAsYAOLOejbWLU=
