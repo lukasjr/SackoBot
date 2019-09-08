@@ -40,7 +40,7 @@ function reply(event, envConfig, callback) {
         TimeStamp: event.ts,
         MessageText: messageText,
       },
-      TableName: 'SackoHistory',
+      TableName: envConfig.DYNAMODB,
     };
     docClient.put(params, (err, data) => {
       if (err) {
@@ -101,10 +101,10 @@ function reply(event, envConfig, callback) {
   }
 }
 
-function slashCommand(callback) {
+function slashCommand(envConfig, callback) {
   const numAttachment = 3;
   const params = {
-    TableName: 'SackoHistory',
+    TableName: envConfig.DYNAMODB,
   };
   docClient.scan(params, (err, data) => {
     if (err) console.log(err, err.stack); // an error occurred
@@ -147,6 +147,7 @@ function loadConfig(context) {
   const envConfig = {};
   envConfig.VERIFICATION_TOKEN = process.env[`VERIFICATION_TOKEN_${alias}`];
   envConfig.BOT_TOKEN = process.env[`BOT_TOKEN_${alias}`];
+  envConfig.DYNAMODB = process.env[`DYNAMODB_${alias}`];
   return envConfig;
 }
 
@@ -170,7 +171,7 @@ exports.handler = (data, context, callback) => {
   switch (messageType) {
     case 'url_verification': verify(body.token, body.challenge, envConfig, callback); break;
     case 'event_callback': reply(body.event, envConfig, callback); break;
-    case 'slash_command': slashCommand(callback); break;
+    case 'slash_command': slashCommand(envConfig, callback); break;
     default: callback(null, { statusCode: 200 });
   }
 };
