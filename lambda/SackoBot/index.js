@@ -5,8 +5,6 @@ const AWS = require('aws-sdk');
 const docClient = new AWS.DynamoDB.DocumentClient({ region: 'us-east-1' });
 const querystring = require('querystring');
 
-const { VERIFICATION_TOKEN } = process.env;
-const { BOT_TOKEN } = process.env;
 const wordlist = '(bread|cash|change|chips|coinage|copper|currency|doubloon|dough|gold|jack|mintage|money|piece|scratch|silver|change|specie)';
 const regex = new RegExp(`(^|\\s)${wordlist}(\\s|$)`, 'ig');
 const slackIcons = {
@@ -16,18 +14,18 @@ const slackIcons = {
 };
 
 // Verify Url - https://api.slack.com/events/url_verification
-function verify(token, challenge, callback) {
+function verify(token, challenge, envConfig, callback) {
   const response = {
     statusCode: 200,
     body: JSON.stringify(challenge),
   };
-  if (token === VERIFICATION_TOKEN) {
+  if (token === envConfig.VERIFICATION_TOKEN) {
     callback(null, response);
   } else callback('verification failed');
 }
 
 // Post message to Slack - https://api.slack.com/methods/chat.postMessage
-function reply(event, callback) {
+function reply(event, envConfig, callback) {
   // send 200 immediately
   callback(null, { statusCode: 200 });
 
@@ -67,7 +65,7 @@ function reply(event, callback) {
 
     const message = JSON.stringify({
       statusCode: 200,
-      token: BOT_TOKEN,
+      token: envConfig.BOT_TOKEN,
       channel: event.channel,
       text: '',
       attachments: attachment,
@@ -80,7 +78,7 @@ function reply(event, callback) {
       path: '/api/chat.postMessage',
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${BOT_TOKEN}`,
+        Authorization: `Bearer ${envConfig.BOT_TOKEN}`,
         'Content-Type': 'application/json; charset=utf-8',
         'Content-Length': message.length,
       },
@@ -141,11 +139,23 @@ function slashCommand(callback) {
   });
 }
 
+function loadConfig(context) {
+  const { invokedFunctionArn } = context;
+  const alias = invokedFunctionArn.split(':').pop().toUpperCase();
+
+
+  const envConfig = {};
+  envConfig.VERIFICATION_TOKEN = process.env[`VERIFICATION_TOKEN_${alias}`];
+  envConfig.BOT_TOKEN = process.env[`BOT_TOKEN_${alias}`];
+  return envConfig;
+}
+
 // Lambda handler
 exports.handler = (data, context, callback) => {
   let body;
   let messageType = '';
   const contentType = data.headers['Content-Type'];
+  const envConfig = loadConfig(context);
   console.log(data.body);
   if (data.body !== null && data.body !== undefined) {
     if (contentType === 'application/json') {
@@ -158,8 +168,8 @@ exports.handler = (data, context, callback) => {
   }
 
   switch (messageType) {
-    case 'url_verification': verify(body.token, body.challenge, callback); break;
-    case 'event_callback': reply(body.event, callback); break;
+    case 'url_verification': verify(body.token, body.challenge, envConfig, callback); break;
+    case 'event_callback': reply(body.event, envConfig, callback); break;
     case 'slash_command': slashCommand(callback); break;
     default: callback(null, { statusCode: 200 });
   }

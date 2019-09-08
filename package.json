@@ -1,17 +1,15 @@
 {
-  "name": "lambaslackbot",
+  "name": "lambdaslackbot",
   "version": "1.0.0",
   "description": "Lambda Test Bot for Slack",
   "main": "index.js",
   "dependencies": {
-    "aws-sdk": "latest"
+    "aws-sdk": "latest",
+    "bluebird": "^3.5.5"
   },
   "devDependencies": {
     "eslint": "^5.15.3",
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-plugin-import": "^2.16.0"
-  },
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
   }
 }
