@@ -4,8 +4,7 @@
     "description": "Lambda Test Bot for Slack",
     "main": "index.js",
     "dependencies": {
-        "aws-sdk": "latest",
-        "bluebird": "^3.5.5"
+        "aws-sdk": "latest"
     },
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1"
