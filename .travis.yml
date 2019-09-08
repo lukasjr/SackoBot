@@ -5,7 +5,7 @@ after_install:
 - "(cd lambda/sacko-bot/ && npm install --production)"
 deploy:
 - provider: script
-  script: node scripts/deploy.js SackoBot
+  script: node scripts/deploy.js SackoBot prod
   skip_cleanup: true
   on:
     branch: master
