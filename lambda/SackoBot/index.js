@@ -15,7 +15,14 @@ const slackIcons = {
 
 function isSacko() {
   const rNumber = Math.random();
+  let trigger = false;
+  if(rNumber < envConfig.SACKO_CHANCE) {
+    trigger = true
+    console.log(trigger);
+  }
   console.log(`Random number: ${rNumber}`);
+  console.log('test message');
+  console.log((rNumber < envConfig.SACKO_CHANCE))
   console.log('Is sacko?: ' + (rNumber < envConfig.SACKO_CHANCE));
   return (rNumber < envConfig.SACKO_CHANCE);
 }
