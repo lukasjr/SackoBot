@@ -41,7 +41,8 @@ function reply(event, envConfig, callback) {
   //if (!event.subtype && event.type === 'message' && (regex.test(messageText))) {
   console.log(`BOT NAME: ${event.bot_profile.name}`);
   console.log(`Sacko chance: ${envConfig.SACKO_CHANCE}`);
-  if (!event.subtype && event.bot_profile.name === 'giphy' && isSacko()) {
+  console.log(`Is sacko?: ${isSacko()}`);
+  if (!event.subtype && event.bot_profile.name === 'giphy' && (isSacko())) {
     // DynamoDB Put
     const params = {
       Item: {
