@@ -38,7 +38,7 @@ function reply(event, envConfig, callback) {
   // check for non-bot message and keywords
   //if (!event.subtype && event.type === 'message' && (regex.test(messageText))) {
   console.log(`BOT NAME: ${event.bot_profile.name}`);
-  if (!event.subtype && event.bot_profile.name === 'giphy') {
+  if (!event.subtype && event.bot_profile.name === 'giphy' && isSacko()) {
     // DynamoDB Put
     const params = {
       Item: {
