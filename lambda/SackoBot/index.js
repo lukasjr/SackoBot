@@ -13,18 +13,11 @@ const slackIcons = {
   U3130P5AA: 'https://ca.slack-edge.com/T2ZM12732-U3130P5AA-af61e8efa7a2-24',
 };
 
-function isSacko() {
+function isSacko(sackoChance) {
   const rNumber = Math.random();
-  let trigger = false;
-  if(rNumber < envConfig.SACKO_CHANCE) {
-    trigger = true
-    console.log(trigger);
-  }
   console.log(`Random number: ${rNumber}`);
-  console.log('test message');
-  console.log((rNumber < envConfig.SACKO_CHANCE))
-  console.log('Is sacko?: ' + (rNumber < envConfig.SACKO_CHANCE));
-  return (rNumber < envConfig.SACKO_CHANCE);
+  console.log('Is sacko?: ' + (rNumber < sackoChance));
+  return (rNumber < sackoChance);
 }
 
 // Verify Url - https://api.slack.com/events/url_verification
@@ -49,7 +42,7 @@ function reply(event, envConfig, callback) {
   //if (!event.subtype && event.type === 'message' && (regex.test(messageText))) {
   console.log(`BOT NAME: ${event.bot_profile.name}`);
   console.log(`Sacko chance: ${envConfig.SACKO_CHANCE}`);
-  if (!event.subtype && event.bot_profile.name === 'giphy' && (isSacko())) {
+  if (!event.subtype && event.bot_profile.name === 'giphy' && (isSacko(envConfig.SACKO_CHANCE))) {
     // DynamoDB Put
     const params = {
       Item: {
