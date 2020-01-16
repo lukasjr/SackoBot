@@ -13,6 +13,10 @@ const slackIcons = {
   U3130P5AA: 'https://ca.slack-edge.com/T2ZM12732-U3130P5AA-af61e8efa7a2-24',
 };
 
+function isSacko() {
+  return (Math.random < envConfig.SACKO_CHANCE);
+}
+
 // Verify Url - https://api.slack.com/events/url_verification
 function verify(token, challenge, envConfig, callback) {
   const response = {
@@ -29,10 +33,11 @@ function reply(event, envConfig, callback) {
   // send 200 immediately
   callback(null, { statusCode: 200 });
 
-  let messageText = event.text;
-  if (event.attachments) messageText = event.attachments[0].title;
+  //let messageText = event.text;
+  //if (event.attachments) messageText = event.attachments[0].title;
   // check for non-bot message and keywords
-  if (!event.subtype && event.type === 'message' && (regex.test(messageText))) {
+  //if (!event.subtype && event.type === 'message' && (regex.test(messageText))) {
+  if (!event.subtype && event.bot_profile.name === 'giphy') {
     // DynamoDB Put
     const params = {
       Item: {
@@ -143,11 +148,11 @@ function loadConfig(context) {
   const { invokedFunctionArn } = context;
   const alias = invokedFunctionArn.split(':').pop().toUpperCase();
 
-
   const envConfig = {};
   envConfig.VERIFICATION_TOKEN = process.env[`VERIFICATION_TOKEN_${alias}`];
   envConfig.BOT_TOKEN = process.env[`BOT_TOKEN_${alias}`];
   envConfig.DYNAMODB = process.env[`DYNAMODB_${alias}`];
+  envConfig.SACKO_CHANCE = process.env[`SACKO_CHANCE_${alias}`];
   return envConfig;
 }
 
