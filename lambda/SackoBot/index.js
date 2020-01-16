@@ -33,10 +33,11 @@ function reply(event, envConfig, callback) {
   // send 200 immediately
   callback(null, { statusCode: 200 });
 
-  //let messageText = event.text;
-  //if (event.attachments) messageText = event.attachments[0].title;
+  let messageText = '';
+  if (event.attachments) messageText = event.attachments[0].title;
   // check for non-bot message and keywords
   //if (!event.subtype && event.type === 'message' && (regex.test(messageText))) {
+  console.log(`BOT NAME: ${event.bot_profile.name}`);
   if (!event.subtype && event.bot_profile.name === 'giphy') {
     // DynamoDB Put
     const params = {
