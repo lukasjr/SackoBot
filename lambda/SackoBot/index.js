@@ -14,7 +14,9 @@ const slackIcons = {
 };
 
 function isSacko() {
-  return (Math.random < envConfig.SACKO_CHANCE);
+  const rNumber = Math.random();
+  console.log(`Random number: ${rNumber}`);
+  return (rNumber < envConfig.SACKO_CHANCE);
 }
 
 // Verify Url - https://api.slack.com/events/url_verification
@@ -38,6 +40,7 @@ function reply(event, envConfig, callback) {
   // check for non-bot message and keywords
   //if (!event.subtype && event.type === 'message' && (regex.test(messageText))) {
   console.log(`BOT NAME: ${event.bot_profile.name}`);
+  console.log(`Sacko chance: ${envConfig.SACKO_CHANCE}`);
   if (!event.subtype && event.bot_profile.name === 'giphy' && isSacko()) {
     // DynamoDB Put
     const params = {
