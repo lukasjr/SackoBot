@@ -126,7 +126,7 @@ function sackoCount(sackoData) {
   }
 
   sackoCountAttachment = {
-    color: '#0CDEF0',
+    color: '#E83333',
     text: sackoCountText,
   }
   console.log(sackoCountAttachment);
@@ -146,7 +146,9 @@ function slashCommand(envConfig, callback) {
       //console.log(items[0]);
 
       const attachmentTest = [];
-      for (let i = 0; i < numAttachment; i += 1) {
+      console.log(items.length);
+      for (let i = 0; items.length > i && i < numAttachment; i += 1) {
+
         attachmentTest[i] = {
           color: '#0CDEF0',
           author_name: `<@${items[i].UserID}>`,
@@ -154,6 +156,7 @@ function slashCommand(envConfig, callback) {
           text: `${items[i].MessageText}`,
           ts: items[i].TimeStamp,
         };
+
       }
 
       attachmentTest.push(sackoCount(items));
@@ -192,13 +195,14 @@ exports.handler = (data, context, callback) => {
   let messageType = '';
   const contentType = data.headers['Content-Type'];
   const envConfig = loadConfig(context);
-  //console.log(data.body);
+  console.log(data.body);
   if (data.body !== null && data.body !== undefined) {
     if (contentType === 'application/json') {
       body = JSON.parse(data.body);
       messageType = body.type;
     } else if (contentType === 'application/x-www-form-urlencoded') {
       body = querystring.parse(data.body);
+      console.log(`Query string:\n${body.user_id}`);
       messageType = 'slash_command';
     }
   }
