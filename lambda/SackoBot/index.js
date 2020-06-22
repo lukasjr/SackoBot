@@ -13,6 +13,13 @@ const slackIcons = {
   U3130P5AA: 'https://ca.slack-edge.com/T2ZM12732-U3130P5AA-af61e8efa7a2-24',
 };
 
+function isSacko(sackoChance) {
+  const rNumber = Math.random();
+  console.log(`Random number: ${rNumber}`);
+  console.log('Is sacko?: ' + (rNumber < sackoChance));
+  return (rNumber < sackoChance);
+}
+
 // Verify Url - https://api.slack.com/events/url_verification
 function verify(token, challenge, envConfig, callback) {
   const response = {
@@ -29,10 +36,13 @@ function reply(event, envConfig, callback) {
   // send 200 immediately
   callback(null, { statusCode: 200 });
 
-  let messageText = event.text;
+  let messageText = '';
   if (event.attachments) messageText = event.attachments[0].title;
   // check for non-bot message and keywords
-  if (!event.subtype && event.type === 'message' && (regex.test(messageText))) {
+  //if (!event.subtype && event.type === 'message' && (regex.test(messageText))) {
+  console.log(`BOT NAME: ${event.bot_profile.name}`);
+  console.log(`Sacko chance: ${envConfig.SACKO_CHANCE}`);
+  if (!event.subtype && event.bot_profile.name === 'giphy' && (isSacko(envConfig.SACKO_CHANCE))) {
     // DynamoDB Put
     const params = {
       Item: {
@@ -40,7 +50,7 @@ function reply(event, envConfig, callback) {
         TimeStamp: event.ts,
         MessageText: messageText,
       },
-      TableName: 'SackoHistory',
+      TableName: envConfig.DYNAMODB,
     };
     docClient.put(params, (err, data) => {
       if (err) {
@@ -101,17 +111,39 @@ function reply(event, envConfig, callback) {
   }
 }
 
-function slashCommand(callback) {
+// https://egkatzioura.com/2016/07/20/query-dynamodb-items-with-node-js-part-2/
+// count the number of sackos for each user
+function sackoCount(sackoData) {
+  let totalSackos = {};
+  var sackoCountText = '';
+  for (let i = 0; i < sackoData.length; ++i) {
+    typeof totalSackos[sackoData[i].UserID] === 'undefined' ? totalSackos[sackoData[i].UserID] = 1 : totalSackos[sackoData[i].UserID]++;
+  }
+
+  for (let user in totalSackos) {
+    console.log(`<@${user}> has ${totalSackos[user]} sackos`);
+    sackoCountText += `<@${user}> has ${totalSackos[user]} sackos\n`;
+  }
+
+  sackoCountAttachment = {
+    color: '#0CDEF0',
+    text: sackoCountText,
+  }
+  console.log(sackoCountAttachment);
+  return sackoCountAttachment;
+}
+
+function slashCommand(envConfig, callback) {
   const numAttachment = 3;
   const params = {
-    TableName: 'SackoHistory',
+    TableName: envConfig.DYNAMODB,
   };
   docClient.scan(params, (err, data) => {
     if (err) console.log(err, err.stack); // an error occurred
     else {
       const items = data.Items;
       items.sort((a, b) => b.TimeStamp - a.TimeStamp);
-      console.log(items[0]);
+      //console.log(items[0]);
 
       const attachmentTest = [];
       for (let i = 0; i < numAttachment; i += 1) {
@@ -123,6 +155,9 @@ function slashCommand(callback) {
           ts: items[i].TimeStamp,
         };
       }
+
+      attachmentTest.push(sackoCount(items));
+
       const attachment = JSON.stringify(attachmentTest);
       const body = JSON.stringify({
         response_type: 'in_channel',
@@ -143,10 +178,11 @@ function loadConfig(context) {
   const { invokedFunctionArn } = context;
   const alias = invokedFunctionArn.split(':').pop().toUpperCase();
 
-
   const envConfig = {};
   envConfig.VERIFICATION_TOKEN = process.env[`VERIFICATION_TOKEN_${alias}`];
   envConfig.BOT_TOKEN = process.env[`BOT_TOKEN_${alias}`];
+  envConfig.DYNAMODB = process.env[`DYNAMODB_${alias}`];
+  envConfig.SACKO_CHANCE = process.env[`SACKO_CHANCE_${alias}`];
   return envConfig;
 }
 
@@ -156,7 +192,7 @@ exports.handler = (data, context, callback) => {
   let messageType = '';
   const contentType = data.headers['Content-Type'];
   const envConfig = loadConfig(context);
-  console.log(data.body);
+  //console.log(data.body);
   if (data.body !== null && data.body !== undefined) {
     if (contentType === 'application/json') {
       body = JSON.parse(data.body);
@@ -170,7 +206,7 @@ exports.handler = (data, context, callback) => {
   switch (messageType) {
     case 'url_verification': verify(body.token, body.challenge, envConfig, callback); break;
     case 'event_callback': reply(body.event, envConfig, callback); break;
-    case 'slash_command': slashCommand(callback); break;
+    case 'slash_command': slashCommand(envConfig, callback); break;
     default: callback(null, { statusCode: 200 });
   }
 };
