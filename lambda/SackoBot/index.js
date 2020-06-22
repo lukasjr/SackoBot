@@ -111,6 +111,28 @@ function reply(event, envConfig, callback) {
   }
 }
 
+// https://egkatzioura.com/2016/07/20/query-dynamodb-items-with-node-js-part-2/
+// count the number of sackos for each user
+function sackoCount(sackoData) {
+  let totalSackos = {};
+  var sackoCountText = '';
+  for (let i = 0; i < sackoData.length; ++i) {
+    typeof totalSackos[sackoData[i].UserID] === 'undefined' ? totalSackos[sackoData[i].UserID] = 1 : totalSackos[sackoData[i].UserID]++;
+  }
+
+  for (let user in totalSackos) {
+    console.log(`<@${user}> has ${totalSackos[user]} sackos`);
+    sackoCountText += `<@${user}> has ${totalSackos[user]} sackos\n`;
+  }
+
+  sackoCountAttachment = {
+    color: '#0CDEF0',
+    text: sackoCountText,
+  }
+  console.log(sackoCountAttachment);
+  return sackoCountAttachment;
+}
+
 function slashCommand(envConfig, callback) {
   const numAttachment = 3;
   const params = {
@@ -121,7 +143,7 @@ function slashCommand(envConfig, callback) {
     else {
       const items = data.Items;
       items.sort((a, b) => b.TimeStamp - a.TimeStamp);
-      console.log(items[0]);
+      //console.log(items[0]);
 
       const attachmentTest = [];
       for (let i = 0; i < numAttachment; i += 1) {
@@ -133,6 +155,9 @@ function slashCommand(envConfig, callback) {
           ts: items[i].TimeStamp,
         };
       }
+
+      attachmentTest.push(sackoCount(items));
+
       const attachment = JSON.stringify(attachmentTest);
       const body = JSON.stringify({
         response_type: 'in_channel',
@@ -167,7 +192,7 @@ exports.handler = (data, context, callback) => {
   let messageType = '';
   const contentType = data.headers['Content-Type'];
   const envConfig = loadConfig(context);
-  console.log(data.body);
+  //console.log(data.body);
   if (data.body !== null && data.body !== undefined) {
     if (contentType === 'application/json') {
       body = JSON.parse(data.body);
