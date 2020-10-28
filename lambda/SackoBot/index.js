@@ -8,9 +8,10 @@ const querystring = require('querystring');
 const wordlist = '(bread|cash|change|chips|coinage|copper|currency|doubloon|dough|gold|jack|mintage|money|piece|scratch|silver|change|specie)';
 const regex = new RegExp(`(^|\\s)${wordlist}(\\s|$)`, 'ig');
 const slackIcons = {
-  U312UCZLN: 'https://ca.slack-edge.com/T2ZM12732-U312UCZLN-g279c4f0b923-48',
+  U312UCZLN: 'https://ca.slack-edge.com/T2ZM12732-U312UCZLN-g79c4f0b9235-512',
   U318QLFF1: 'https://ca.slack-edge.com/T2ZM12732-U318QLFF1-7a93098a4d4a-24',
   U3130P5AA: 'https://ca.slack-edge.com/T2ZM12732-U3130P5AA-af61e8efa7a2-24',
+  U2ZQBF8GY: 'https://ca.slack-edge.com/T2ZM12732-U2ZQBF8GY-0333983cc709-512'
 };
 
 function isSacko(sackoChance) {
