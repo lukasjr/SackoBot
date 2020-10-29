@@ -1,8 +1,8 @@
 language: node_js
 node_js:
 - 8.10.0
-after_install:
-- "(cd lambda/sacko-bot/ && npm install --production)"
+os: linux
+dist: xenial
 deploy:
 - provider: script
   script: node scripts/deploy.js SackoBot prod
