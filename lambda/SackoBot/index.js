@@ -133,8 +133,8 @@ function sackoCount(sackoData) {
   for (let user in totalSackos) {
     let accuracy = totalSackos[user]/totalGifs[user]
     let percentage = Math.round((accuracy + Number.EPSILON) * 100)
-    console.log(`<@${user}> has ${totalSackos[user]} sackos and ${totalGifs[user]} attempts - ${percentage}`);
-    sackoCountText += `<@${user}> has ${totalSackos[user]} sackos and ${totalGifs[user]} attempts - ${percentage}\n`;
+    console.log(`<@${user}> has ${totalSackos[user]} sackos and ${totalGifs[user]} attempts - ${percentage}%`);
+    sackoCountText += `<@${user}> has ${totalSackos[user]} sackos and ${totalGifs[user]} attempts - ${percentage}%\n`;
   }
 
   sackoCountAttachment = {
@@ -159,18 +159,30 @@ function slashCommand(envConfig, callback) {
 
       const attachmentTest = [];
       console.log(items.length);
-      for (let i = 0; items.length > i && i < numAttachment; i += 1) {
+      
+      
+      //copy the array of messages and remove items that have a false flag
+      let itemsCopy = [...items];
+      for (var i = itemsCopy.length - 1; i >= 0; i--) {
+        if (!itemsCopy[i]['SackoFlag']) {
+         itemsCopy.splice(i, 1);
+        }
+      }
+
+      //grab the first numAttachment from the messages to create a list in attachment form
+      for (let i = 0; itemsCopy.length > i && i < numAttachment; i += 1) {
 
         attachmentTest[i] = {
           color: '#0CDEF0',
-          author_name: `<@${items[i].UserID}>`,
-          author_icon: slackIcons[`${items[i].UserID}`],
-          text: `${items[i].MessageText}`,
-          ts: items[i].TimeStamp,
+          author_name: `<@${itemsCopy[i].UserID}>`,
+          author_icon: slackIcons[`${itemsCopy[i].UserID}`],
+          text: `${itemsCopy[i].MessageText}`,
+          ts: itemsCopy[i].TimeStamp,
         };
 
       }
 
+      //add stats as attachment
       attachmentTest.push(sackoCount(items));
 
       const attachment = JSON.stringify(attachmentTest);
